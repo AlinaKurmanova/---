@@ -1,0 +1,22 @@
+from tkinter import * #Импортирует модуль tkinter
+from tkinter import messagebox #Для создания функции на выход из приложения
+from PIL import Image, ImageTk #Загрузка библиотеки
+
+def on_closing():
+    if messagebox.askokcancel("Выход", "Выйти?"):
+        tk.destroy()
+
+tk = Tk() #Создаём объект
+tk.protocol("WM_DELETE_WINDOW", on_closing) #Функция для выхода
+tk.title("Аминокислоты")
+tk.resizable(0, 0) #Для того,чтобы было невозможно менять размер изображения
+tk.wm_attributes("-topmost", 1) #Для того, чтобы изображение было поверх окон
+canvas = Canvas(tk, width=900, height=600, bd=0, highlightthickness=0) #Холст,может использоваться для вывода графических примитивов, таких как прямоугольники, эллипсы, линии, а также текст, изображения и окна
+canvas.pack()
+
+our_image2 = Image.open("Glycine.png")
+our_image2 = our_image2.resize((400, 220), Image.ANTIALIAS)
+our_image2 = ImageTk.PhotoImage(our_image2)
+our_label2 = Label(image = our_image2)   #Этикетка.Выводит графическое изображение
+our_label2.image = our_image2
+our_label2.place(x = 50, y = 50)
