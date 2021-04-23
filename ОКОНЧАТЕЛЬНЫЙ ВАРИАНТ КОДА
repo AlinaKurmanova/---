@@ -1,0 +1,382 @@
+//1(ГЛАВНАЯ ПРОГРАММА)
+import java.io.*; //Abstract Window Toolkit (AWT) — исходная платформо-независимая оконная библиотека графического интерфейса (Widget toolkit) является частью Java Foundation Classes
+
+import java.awt.Dialog.ModalityType; 
+import java.awt.Dimension; 
+import java.awt.FlowLayout; //менеджер расположения
+import java.awt.Font; //отвечает за шрифты
+import java.awt.Image; 
+import java.awt.Toolkit; 
+
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JScrollPane;
+import javax.imageio.*;
+
+
+
+//==============================================================================
+//
+//     Определение класса ImageViewer
+//
+//==============================================================================
+
+class ImageViewer
+
+{
+
+ImageViewer (String FileName)
+
+{
+
+int  x, y, w_max, h_max, w_img, h_img, w, h;
+
+Image img;
+
+//  Формирование окна MainDialog для вывода изображения
+JDialog MainDialog = new JDialog ();
+MainDialog.setTitle (" Image Viewer:   " + FileName.toUpperCase ());
+Dimension screen_dimension = Toolkit.getDefaultToolkit().getScreenSize();
+MainDialog.setSize (screen_dimension.width - 200, screen_dimension.height - 200);
+x = (screen_dimension.width - MainDialog.getWidth()) / 2;
+y = (screen_dimension.height - MainDialog.getHeight()) / 2;
+MainDialog.setLocation (x, y);
+// MainDialog.setResizable (false);
+MainDialog.setLayout (new FlowLayout ());
+
+try {
+
+   //  Получение изображения из файла
+   img = ImageIO.read (new File (FileName));
+   ImageComponent ic = new ImageComponent (img);
+
+   //  Формирование скроллируемой панели с изображением
+   JScrollPane ViewScrollPane = new JScrollPane (ic,
+                                    JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                                    JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+   w_max = MainDialog.getWidth () - 40;
+   h_max = MainDialog.getHeight () - 120;
+   w_img = img.getWidth (null);
+   h_img = img.getHeight (null);
+   if (w_img > w_max)
+      w = w_max;
+   else
+      w = w_img;
+   if (h_img > h_max)
+      h = h_max;
+   else
+      h = h_img;
+   ViewScrollPane.setPreferredSize (new Dimension (w, h));
+
+   //  Формирование ButtonsHorizontalBox
+   JButton CancelButton = new JButton ("Закрыть");
+   CancelButton.setFont (new Font ("Arial", Font.BOLD, 16));
+   CancelButton.setPreferredSize (new Dimension (150, 30));
+   CancelButton.setToolTipText ("Закрыть");
+   Box ButtonsHorizontalBox = Box.createHorizontalBox ();
+   ButtonsHorizontalBox.add (CancelButton);
+
+   //  Формирование VerticalBox
+   Box VerticalBox = Box.createVerticalBox ();
+   VerticalBox.add(Box.createVerticalStrut (12 + (h_max - h) / 2));
+   VerticalBox.add (ViewScrollPane);
+   VerticalBox.add (Box.createVerticalStrut (18 + (h_max - h) / 2));
+   VerticalBox.add (ButtonsHorizontalBox);
+
+   //  Завершение формирования окна диалога MainDialog
+   MainDialog.add (VerticalBox);
+   MainDialog.setModalityType (ModalityType.APPLICATION_MODAL);
+   //   MainDialog.setDefaultCloseOperation (JDialog.DO_NOTHING_ON_CLOSE);
+
+   //  Назначение обработчиков нажатий кнопок
+   ImageViewer_ BtnListener = new ImageViewer_();
+   //SaveButton.addActionListener (BtnListener);
+   //SaveAsButton.addActionListener (BtnListener);
+   CancelButton.addActionListener (BtnListener);
+
+   MainDialog.setName ("");
+
+   MainDialog.setVisible (true);
+
+   MainDialog.dispose ();
+
+   }
+
+catch (FileNotFoundException e)
+   {
+   System.out.println ("Не найден файл: " + FileName);
+   }
+
+catch (IOException e)
+   {
+   System.out.println ("Ошибка ввода/вывода: " + e.toString ());
+   }
+
+finally {}
+
+}
+
+public static void main (String[] args) throws IOException
+
+{
+
+while (true)
+
+   {
+
+   String FileName = FileManager.FileChooseDialog ();
+
+   if (FileName.isEmpty ())
+      break;
+
+   new ImageViewer (FileName);
+
+   }
+   
+   
+   
+   
+   
+
+}         //  main
+
+}        //  class
+
+
+
+
+
+//2
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+
+
+
+
+//==============================================================================
+//
+//     Определение класса ImageViewer_
+//
+//==============================================================================
+
+class ImageViewer_ implements ActionListener
+
+{
+
+public void actionPerformed (ActionEvent ae)
+
+{
+
+final JButton Btn = (JButton) ae.getSource ();
+
+JDialog Dlg = ((JDialog) Btn.getParent().getParent().getParent().getParent().getParent().getParent());
+
+if (Btn.getText () == "Закрыть")
+   {
+   Dlg.setName ("Закрыть");
+   Dlg.setVisible (false);
+   }
+  
+}
+
+}
+
+
+
+//3
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.Dialog.ModalityType;
+
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+
+//==============================================================================
+//
+//     Определение класса FileManager
+//
+//==============================================================================
+
+class FileManager
+
+{
+	
+public static String FileChooseDialog () {
+
+//  Формирование FileNameHorizontalBox
+    JLabel FileNameLabel = new JLabel("Файл:  ");
+    FileNameLabel.setFont(new Font("Arial", Font.BOLD, 16));
+    JTextField FileNameTextField = new JTextField();
+    FileNameTextField.setFont(new Font("Arial", Font.BOLD, 16));
+    FileNameTextField.setPreferredSize(new Dimension(250, 30));
+    JButton FileNameButton = new JButton("Обзор ...");
+    FileNameButton.setFont(new Font("Arial", Font.BOLD, 16));
+    FileNameButton.setPreferredSize(new Dimension(100, 30));
+    Box FileNameHorizontalBox = Box.createHorizontalBox();
+    FileNameHorizontalBox.add(FileNameLabel);
+    FileNameHorizontalBox.add(Box.createHorizontalStrut(15));
+    FileNameHorizontalBox.add(FileNameTextField);
+    FileNameHorizontalBox.add(Box.createHorizontalStrut(25));
+    FileNameHorizontalBox.add(FileNameButton);
+
+//  Формирование ButtonsHorizontalBox
+    JButton ContinueButton = new JButton("Открыть");
+    ContinueButton.setFont(new Font("Arial", Font.BOLD, 16));
+    ContinueButton.setPreferredSize(new Dimension(100, 30));
+    JButton CancelButton = new JButton("Завершить");
+    CancelButton.setFont(new Font("Arial", Font.BOLD, 16));
+    CancelButton.setPreferredSize(new Dimension(100, 30));
+    Box ButtonsHorizontalBox = Box.createHorizontalBox();
+    ButtonsHorizontalBox.add(ContinueButton);
+    ButtonsHorizontalBox.add(Box.createHorizontalStrut(40));
+    ButtonsHorizontalBox.add(CancelButton);
+
+//  Формирование SelectFileDialogVerticalBox
+    Box FileChooseDialogVerticalBox = Box.createVerticalBox();
+    FileChooseDialogVerticalBox.add(Box.createVerticalStrut(25));
+    FileChooseDialogVerticalBox.add(FileNameHorizontalBox);
+    FileChooseDialogVerticalBox.add(Box.createVerticalStrut(25));
+    FileChooseDialogVerticalBox.add(ButtonsHorizontalBox);
+
+//  Формирование FileChooseDialog 
+    JDialog FileChooseDialog = new JDialog();
+    FileChooseDialog.setTitle(" Выбор файла");
+    FileChooseDialog.setSize(600, 180);
+    Dimension screen_dimension = Toolkit.getDefaultToolkit().getScreenSize();
+    int x = (screen_dimension.width - FileChooseDialog.getWidth()) / 2;
+    int y = (screen_dimension.height - FileChooseDialog.getHeight()) / 2;
+    FileChooseDialog.setLocation(x, y);
+    FileChooseDialog.setResizable(false);
+    FileChooseDialog.setLayout(new FlowLayout());
+    FileChooseDialog.add(FileChooseDialogVerticalBox);
+    FileChooseDialog.setModalityType(ModalityType.APPLICATION_MODAL);
+    FileChooseDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+    FileManager_ FCD_BtnListener = new FileManager_();
+    FileNameButton.addActionListener(FCD_BtnListener);
+    ContinueButton.addActionListener(FCD_BtnListener);
+    CancelButton.addActionListener(FCD_BtnListener);
+    FileNameTextField.requestFocus();
+    FileChooseDialog.setVisible(true);
+
+
+    String FileName = FileNameTextField.getText();
+
+    FileChooseDialog.dispose();
+
+    return FileName;
+    
+    
+    //4
+    import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import java.io.File;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JTextField;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+
+//==============================================================================
+//
+//     Определение класса FileManager_
+//
+//==============================================================================
+
+class FileManager_ implements ActionListener {
+
+   public void actionPerformed(ActionEvent ae) {
+
+      final JButton Btn = (JButton) ae.getSource();
+
+      JDialog Dlg = ((JDialog) Btn.getParent().getParent().getParent().getParent().getParent().getParent());
+
+      if ("Обзор ..." == Btn.getText()) {
+         JFileChooser fc = new JFileChooser();
+         FileFilter file_filter = new FileNameExtensionFilter("xml files", "jpg");
+         fc.addChoosableFileFilter(file_filter);
+         fc.setDialogTitle(" Выбор файла");
+         String file_name;
+         file_name = ((JTextField) ((Container) Btn.getParent().getParent().getComponent(1)).getComponent(2)).getText();
+         File file = new File(file_name);
+         fc.setSelectedFile(file);
+         if (fc.showDialog(null, "Open") == JFileChooser.APPROVE_OPTION) {
+            file = fc.getSelectedFile();
+            file_name = file.getAbsolutePath();
+            ((JTextField) Btn.getParent().getComponent(2)).setText(file_name);
+         }
+      }
+
+      if (Btn.getText() == "Открыть") {
+         String s;
+         s = ((JTextField) ((Container) Btn.getParent().getParent().getComponent(1)).getComponent(2)).getText();
+         if (s.isEmpty()) {
+            ((JTextField) ((Container) Btn.getParent().getParent().getComponent(1)).getComponent(2)).requestFocus();
+         } else {
+            Dlg.setVisible(false);
+         }
+      }
+
+      if (Btn.getText() == "Завершить") {
+         ((JTextField) ((Container) Btn.getParent().getParent().getComponent(1)).getComponent(2)).setText("");
+         Dlg.setVisible(false);
+      }
+
+
+   }
+
+}
+
+
+//5
+import javax.swing.*;
+import java.awt.*;
+
+//==============================================================================
+//
+//     Определение класса ImageComponent
+//
+//==============================================================================
+
+class ImageComponent extends JComponent
+
+{
+   
+private Image img;
+
+
+public ImageComponent (Image img_)
+
+{
+img = img_;
+}
+
+public void paintComponent (Graphics g)
+
+{
+
+if (img == null)
+   return;
+
+// Отображение рисунка в левом верхнем углу.
+g.drawImage (img, 0, 0, null);
+
+}
+
+}
+
+
+
